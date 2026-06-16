@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Edad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #010f01;
+      --panel: #011d15;
+      --card: #1c1c26;
+      --border: #2a2a3a;
+      --accent: #7c5cfc;
+      --accent2: #a76de0;
+      --green: #34d364;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --teal: #170118;
+      --text: #f0eeff;
+      --muted: #7a7a9a;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image:
+        radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 20% 80%, rgba(124,92,252,0.07) 0%, transparent 55%);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(45,212,191,0.14);
+      color: var(--teal);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 50px;
+      margin-bottom: 0.6rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      background: linear-gradient(135deg, var(--teal), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input[type="date"],
+    input[type="text"] {
+      background: #0a0a10;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      color-scheme: dark;
+    }
+
+    input[type="date"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
+    }
+
+    .btn-calc {
+      width: 100%;
+      background: linear-gradient(135deg, var(--teal), #06b6d4);
+      border: none;
+      border-radius: 12px;
+      color: #0a0a10;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.85rem;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+      margin-top: 0.3rem;
+    }
+    .btn-calc:hover { opacity: 0.9; }
+    .btn-calc:active { transform: scale(0.98); }
+
+    .result-area {
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .result-area.visible { display: block; }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.2rem;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.9rem 0.5rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .stat.years .stat-value  { color: var(--teal); }
+    .stat.months .stat-value { color: var(--accent2); }
+    .stat.days .stat-value   { color: var(--amber); font-size: 1.2rem; }
+
+    .extra-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .info-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .info-row .info-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .info-row .info-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .bday-banner {
+      display: none;
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 12px;
+      padding: 0.8rem 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--amber);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .bday-banner.show { display: block; }
+
+    .progress-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem;
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #252535;
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--accent2));
+      border-radius: 50px;
+      transition: width 0.8s ease;
+    }
+
+    .error-msg {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 10px;
+      color: var(--red);
+      font-size: 0.85rem;
+      padding: 0.7rem 1rem;
+      margin-top: 0.8rem;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent2);
+      border-radius: 50px;
+      padding: 0.6rem 1.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 1.5rem;
+    }
+    .btn-nav:hover { background: rgba(124,92,252,0.15); }
+    .btn-nav:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Tema 3.1 – Scripting con JavaScript</div>
+  <h1>Calculadora de Edad</h1>
+  <p>Ingresa tu fecha de nacimiento para conocer tu edad exacta</p>
+</header>
+
+<div class="card">
+  <div class="field">
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" placeholder="Tu nombre (opcional)" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="fechaNac">Fecha de nacimiento</label>
+    <input type="date" id="fechaNac" max="">
+  </div>
+
+  <button class="btn-calc" onclick="calcularEdad()">Calcular mi edad</button>
+
+  <div class="error-msg" id="error-msg">⚠ Por favor ingresa una fecha de nacimiento válida.</div>
+
+  <div class="result-area" id="result-area">
+    <div class="divider"></div>
+    <div class="bday-banner" id="bday-banner">🎂 ¡Feliz cumpleaños! Hoy es tu día especial 🎉</div>
+
+    <div class="stats-grid">
+      <div class="stat years">
+        <span class="stat-value" id="res-years">0</span>
+        <span class="stat-label">Años</span>
+      </div>
+      <div class="stat months">
+        <span class="stat-value" id="res-months">0</span>
+        <span class="stat-label">Meses</span>
+      </div>
+      <div class="stat days">
+        <span class="stat-value" id="res-days">0</span>
+        <span class="stat-label">Días</span>
+      </div>
+    </div>
+
+    <div class="extra-grid">
+      <div class="info-row">
+        <span class="info-label">Días vividos</span>
+        <span class="info-val" id="res-total-days">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Próx. cumpleaños</span>
+        <span class="info-val" id="res-next-bday">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Día de nacimiento</span>
+        <span class="info-val" id="res-weekday">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Signo zodiacal</span>
+        <span class="info-val" id="res-zodiac">—</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">Progreso del año actual</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="calculadora.html" class="btn-nav">← Volver a la Calculadora</a>
+
+<script>
+  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function zodiac(mes, dia) {
+    const rangos = [
+      [20, '♑ Capricornio'], [19, '♒ Acuario'], [20, '♓ Piscis'], [20, '♈ Aries'],
+      [21, '♉ Tauro'],       [21, '♊ Géminis'], [22, '♋ Cáncer'], [23, '♌ Leo'],
+      [23, '♍ Virgo'],       [23, '♎ Libra'],   [22, '♏ Escorpio'], [21, '♐ Sagitario'], [31, '♑ Capricornio']
+    ];
+    return dia <= rangos[mes][0] ? rangos[mes][1] : rangos[mes+1][1];
+  }
+
+  document.getElementById('fechaNac').max = new Date().toISOString().split('T')[0];
+
+  function calcularEdad() {
+    const input  = document.getElementById('fechaNac').value;
+    const nombre = document.getElementById('nombre').value.trim();
+    const errEl  = document.getElementById('error-msg');
+    const resEl  = document.getElementById('result-area');
+
+    errEl.classList.remove('visible');
+    resEl.classList.remove('visible');
+
+    if (!input) { errEl.classList.add('visible'); return; }
+
+    const nacimiento = new Date(input + 'T00:00:00');
+    const hoy        = new Date();
+
+    if (nacimiento > hoy) { errEl.classList.add('visible'); return; }
+
+    let años  = hoy.getFullYear() - nacimiento.getFullYear();
+    let mesD  = hoy.getMonth()   - nacimiento.getMonth();
+    let diaD  = hoy.getDate()    - nacimiento.getDate();
+
+    if (diaD  < 0) { mesD--; diaD += new Date(hoy.getFullYear(), hoy.getMonth(), 0).getDate(); }
+    if (mesD  < 0) { años--; mesD += 12; }
+
+    const totalDias = Math.floor((hoy - nacimiento) / 86400000);
+
+    const esCumple = hoy.getMonth() === nacimiento.getMonth() && hoy.getDate() === nacimiento.getDate();
+
+    let proxCumple = new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate());
+    if (proxCumple <= hoy && !esCumple) proxCumple.setFullYear(proxCumple.getFullYear() + 1);
+    const diasParaCumple = Math.ceil((proxCumple - hoy) / 86400000);
+
+    const iniAño = new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate());
+    if (iniAño > hoy) iniAño.setFullYear(iniAño.getFullYear() - 1);
+    const finAño = new Date(iniAño.getFullYear() + 1, nacimiento.getMonth(), nacimiento.getDate());
+    const pct    = Math.round((hoy - iniAño) / (finAño - iniAño) * 100);
+
+    const semana  = dias[nacimiento.getDay()];
+    const signo   = zodiac(nacimiento.getMonth(), nacimiento.getDate());
+
+    document.getElementById('res-years').textContent  = años;
+    document.getElementById('res-months').textContent = mesD;
+    document.getElementById('res-days').textContent   = diaD;
+    document.getElementById('res-total-days').textContent = totalDias.toLocaleString('es');
+    document.getElementById('res-weekday').textContent = semana.charAt(0).toUpperCase() + semana.slice(1);
+    document.getElementById('res-zodiac').textContent  = signo;
+
+    if (esCumple) {
+      document.getElementById('res-next-bday').textContent = '¡Hoy!';
+      document.getElementById('bday-banner').classList.add('show');
+    } else {
+      document.getElementById('res-next-bday').textContent = diasParaCumple + ' días';
+      document.getElementById('bday-banner').classList.remove('show');
+    }
+
+    const pLabel = nombre
+      ? nombre + ' lleva el ' + pct + '% de su año actual'
+      : 'Llevas el ' + pct + '% de tu año actual';
+    document.getElementById('progress-label').textContent = pLabel;
+
+    setTimeout(() => {
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }, 50);
+
+    resEl.classList.add('visible');
+  }
+
+  document.getElementById('fechaNac').addEventListener('keydown', e => {
+    if (e.key === 'Enter') calcularEdad();
+  });
+</script>
+</body>
+</html>
